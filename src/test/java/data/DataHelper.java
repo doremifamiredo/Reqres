@@ -12,11 +12,11 @@ import java.util.Random;
 
 public class DataHelper {
     private static Faker faker = new Faker(new Locale("en"));
+    private static final String[] validEmails = new String[]{"george.bluth@reqres.in", "janet.weaver@reqres.in", "emma.wong@reqres.in",
+            "eve.holt@reqres.in", "charles.morris@reqres.in", "tracey.ramos@reqres.in"};
 
     public static String generateEmail() {
-        String[] email = new String[]{"george.bluth@reqres.in", "janet.weaver@reqres.in", "emma.wong@reqres.in",
-                "eve.holt@reqres.in", "charles.morris@reqres.in", "tracey.ramos@reqres.in"};
-        return email[new Random().nextInt(email.length)];
+        return validEmails[faker.random().nextInt(validEmails.length)];
     }
 
     public static AuthInfo getAuthIfoWithTestData() {
