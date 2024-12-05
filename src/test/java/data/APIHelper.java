@@ -1,10 +1,11 @@
 package data;
 
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import netscape.javascript.JSObject;
+import io.restassured.specification.ResponseSpecification;
 
 import java.util.*;
 
@@ -14,9 +15,16 @@ import static data.DataHelper.User;
 public class APIHelper {
     private static final RequestSpecification requestSpec = new RequestSpecBuilder()
             .setBaseUri("https://reqres.in")
-            .setAccept(ContentType.JSON)
             .setContentType(ContentType.JSON)
             .log(LogDetail.ALL)
+            .build();
+    private static final ResponseSpecification responseOK = new ResponseSpecBuilder()
+            .expectStatusCode(200)
+            .log(LogDetail.BODY)
+            .build();
+    private static final ResponseSpecification responseDEL = new ResponseSpecBuilder()
+            .expectStatusCode(204)
+            .log(LogDetail.BODY)
             .build();
 
     private APIHelper() {
@@ -26,10 +34,9 @@ public class APIHelper {
         given()
                 .spec(requestSpec)
                 .body(user)
-                .when().log().body()
+                .when()
                 .post("/api/register")
-                .then().log().body()
-                .statusCode(200);
+                .then().spec(responseOK);
     }
 
     public static String register(DataHelper.OnlyEmail email) {
@@ -44,8 +51,7 @@ public class APIHelper {
     }
 
     public static ArrayList<User> listUsers() {
-        ArrayList<User> allUsers = new ArrayList<User>();
-        //for (int i = 1; i < 3; i++) {
+        ArrayList<User> allUsers = new ArrayList<>();
         int i = 0;
         int totalPages;
         do {
@@ -54,8 +60,7 @@ public class APIHelper {
                     .spec(requestSpec)
                     .when().log().body()
                     .get("/api/users?page=" + i)
-                    .then().log().body()
-                    .statusCode(200)
+                    .then().spec(responseOK)
                     .extract()
                     .body().as(DataHelper.Response.class);
             allUsers.addAll(response.data);
@@ -65,23 +70,22 @@ public class APIHelper {
     }
 
 
-public static void deleteUser(int id) {
-    given()
-            .spec(requestSpec)
-            .when().log().body()
-            .delete("/api/users/" + id)
-            .then().log().body()
-            .statusCode(204);
-}
+    public static int deleteUser(int id) {
+        return given()
+                .spec(requestSpec)
+                .when().log().body()
+                .delete("/api/users/" + id)
+                .then().spec(responseDEL)
+                .extract().statusCode();
+    }
 
- public static String updateUsers(int id, DataHelper.UpdateInfo updateInfo) {
-     return given()
-             .spec(requestSpec)
-             .body(updateInfo)
-             .when()
-             .patch("/api/users/" + id)
-             .then().log().body()
-             .statusCode(200)
-             .extract().path("updatedAt");
- }
+    public static String updateUsers(int id, DataHelper.UpdateInfo updateInfo) {
+        return given()
+                .spec(requestSpec)
+                .body(updateInfo)
+                .when()
+                .patch("/api/users/" + id)
+                .then().spec(responseOK)
+                .extract().path("updatedAt");
+    }
 }

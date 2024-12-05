@@ -2,23 +2,23 @@ package test;
 
 import data.APIHelper;
 import data.DataHelper;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static data.DataHelper.User;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ReqresTest {
 
     @Test
     @DisplayName("Should successfully register")
     void shouldSuccessfulRegister() {
-        var authInfo = DataHelper.getAuthIfoWithTestData();
-        APIHelper.register(authInfo);
+        APIHelper.register(DataHelper.getAuthIfoWithTestData());
     }
 
     @Test
@@ -30,21 +30,15 @@ public class ReqresTest {
 
     @Test
     @DisplayName("Should get list of users and check all email ending is @reqres.in")
-    void shouldGetListUsers() throws IOException {
-        ArrayList<User> response = APIHelper.listUsers();
-        ArrayList<User> notReqresServer = new ArrayList<User>();
-        for (User user : response) {
-            int cut = user.email.indexOf("@");
-            if (!user.email.substring(cut).equals("@reqres.in"))
-                notReqresServer.add(user);
-        }
-        assertEquals(0, notReqresServer.size());
+    void shouldGetListUsers() {
+        ArrayList<User> allUsers = APIHelper.listUsers();
+        assertTrue(allUsers.stream().allMatch(user -> user.email.contains("@reqres.in")));
     }
 
     @Test
     @DisplayName("Delete user")
     void shouldDeleteUser() {
-        APIHelper.deleteUser(2);
+        assertEquals(204, APIHelper.deleteUser(2));
     }
 
     @Test
